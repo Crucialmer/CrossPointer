@@ -1,0 +1,29 @@
+name: autobuild
+
+on:
+  push:
+    branches: ["master"]
+    paths-ignore:
+      - ".gitignore"
+      - "*.md"
+      - "LICENSE"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lukka/get-cmake@latest
+      - uses: step-security/msvc-dev-cmd@v1
+      - name: Build
+        shell: pwsh
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE --no-warn-unused-cli
+          cmake --build build -j 8
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: CrossPointer
+          path: .\CrossPointer.exe
